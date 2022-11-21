@@ -1,0 +1,306 @@
+import getpass
+import telnetlib
+
+HOST = ""
+user = ""
+password = ""
+tn = telnetlib.Telnet(HOST)
+
+tn.read_until(b"Username:")
+tn.write(user.encode('ascii') + b"\n")
+if password:
+	
+	tn.read_until(b"Password:")
+	tn.write(password.encode('ascii') + b"\n")
+	tn.write(b"screen-length 0 temporary\n")
+tn.write(b"system-view\n")
+
+
+
+
+sysname=input("enter the sysname")
+tn.write(b'sysname'+sysname.encode('ascii') +b"\n")
+tn.write(b'ftp server enable \n')
+
+while true:
+    
+       x=input("enter the vlan")
+       
+       x1=x.split(',')
+       for i in range(0,len(x1)):
+        x1[i]=x1[i].lstrip()
+        x1[i]=x1[i].rstrip()
+       for j in range(0,len(x1)):
+         if 'to' in x1[j]:
+       
+          x2=x1[j].split('to')
+          x3=x2[0]
+          print(x3)
+          x4=x2[1]
+          print(x4)
+          for k in range(int(x3),int(x4)):
+            tn.write(b'vlan batch'+k.encode('ascii') +b'\n')
+         else:
+            tn.write(b'vlan batch'+x[j].encode('ascii') +b'\n')
+            
+       ch=input("want to enter vlan yes/not")
+       if ch=='n':
+        break
+
+
+tn.write(b"telnet server enable \n")
+tn.write(b"lldp enable\n")
+tn.write(b"clock timezone ist add 5:30:00\n")
+tn.write(b"stp region-configuration\n")
+region=input("enter the region name")
+x=region.split(',')
+for i in x:
+   tn.write(b"region-name sector"+i.encode('ascii')+b'\n')
+
+tn.write(b'region-level 1 \n')
+while True:            
+     instance=input("enter the instance")
+     while True:        
+        x=input("enter the vlan")
+        ch=input("want to enter vlan yes/not")
+        x1=x.split(',')
+        for j in range(0,len(x1)):
+            if 'to' in x1[j]:
+       
+                 x2=x1[j].split('to')
+                 x3=x2[0]
+                 print(x3)
+                 x4=x2[1]
+                 print(x4)
+                 for k in range(int(x3),int(x4)):
+                    tn.write(b'instance '+instance.encode('ascii') +b'\n'+b"vlan "+k.encode('ascii') +b'\n')
+            else:
+               tn.write(b'instance '+instance.encode('ascii') +b'\n'+b"vlan "+x[j].encode('ascii') +b'\n')
+        if ch=='n':
+         break
+     chinstance=input("want to enter more instance y or n")
+     if chinstance=='n':
+        break
+tn.write(b'active region-configuration \n')
+print("acl number coomand")
+acl=input("enter acl number")
+tn.write(b'acl number'+acl.encode('ascii')+b'\n')
+rule=input("enter rule number")
+tn.write(b'rule'+rule.encode('ascii')+b"\n"+ b'permit source-mac 38ea-a78f-3059b\n')
+tn.write(b'rule'+rule.encode('ascii')+b"\n"+ b'permit source-mac 049f-cac9-fb0b\n')
+tn.write(b'rule'+rule.encode('ascii')+b"\n"+ b'permit source-mac cc2d-e0bd-2d0f\n')
+tn.write(b'rule'+rule.encode('ascii')+b"\n"+ b'permit source-mac 0030-8813-3ad9\n')
+print(" rule 50 deny vlan-id 41")
+while True:
+    vlanid=input("enter vlanid")
+    rule=input("enter rule number")
+    tn.write(b'rule'+rule.encode('ascii')+b"\n"+ b"deny vlan-id"+vlanid.encode('ascii')+b"\n")
+    m= input("want to enter more vlan id y or n")
+    if m=='n':
+       break
+print("aaa commands")
+tn.write(b'free-rule-template name default_free_rule \n')
+tn.write(b'portal-access-profile name portal_access_profile\n')
+tn.write(b"aaa\n")
+tn.write(b"authentication-scheme default\n")
+tn.write(b"authentication-scheme radius\n")
+tn.write(b"authentication-mode radius\n")
+tn.write(b"authorization-scheme default\n")
+tn.write(b"accounting-scheme default\n")
+tn.write(b"local-aaa-user password policy administrator\n")
+
+tn.write(b"password expire 0\n")
+tn.write(b"domain default \n")
+tn.write(b"authentication-scheme radius \n")
+tn.write(b"radius-server default\n")
+tn.write(b"domain default_admin\n")
+tn.write(b"authentication-scheme default\n")
+tn.write(b"undo local-user admin\n")
+user=input("enter user name")
+tn.write(b"local-user"+user.encode('ascii')+b"\n" +b" password irreversible-cipher $1a$A&&hSskATH$%'Oc@Q*f&(b!dB5Y% \n")                                                                                       
+tn.write(b"local-user" +user.encode('ascii')+b"\n "+b"  privilege level 15\n")
+tn.write(b"local-user"+ user.encode('ascii')+b"\n" +b"ftp-directory flash:/\n")
+service=input("enter service type")
+tn.write(b"local-user netcom service-type"+service.encode('ascii')+b"\n")
+print("ntp commands")         
+tn.write( b"ntp-service server disable\n")
+tn.write( b"ntp-service ipv6 server disable\n")
+tn.write( b"ntp-service authentication enable\n")
+tn.write( b"ntp-service authentication-keyid 45 authentication-mode hmac-sha256 cipher %^%#6 \n")                                                                                    
+tn.write( b"ntp-service reliable authentication-keyid 45\n")
+tn.write( b"ntp-service unicast-server 172.16.0.3 authentication-keyid 45\n")
+tn.write( b"ntp-service unicast-server 133.243.238.164\n")
+tn.write( b"ntp-service unicast-peer 133.243.238.164 \n")
+tn.write(b"interface Vlanif1\n")
+tn.write(b"interface Vlanif4002\n")
+ip=input("enter ip addresss")         
+tn.write(b"ip address"+encode("ascii")+b'n')
+ethernet=input("enter the ethernet trunk")         
+tn.write(b"interface Eth-Trunk"+ethernet.encode('ascii')+b'\n')
+ #description *****connected to core FBD*****
+tn.write(b"port link-type trunk\n")
+tn.write(b"undo port trunk allow-pass vlan 1\n")
+                                                                                   
+tn.write(b"stp instance 6 cost 62000 \n")
+while true:
+    
+       x=input("enter the vlan")
+       
+       x1=x.split(',')
+       for i in range(0,len(x1)):
+        x1[i]=x1[i].lstrip()
+        x1[i]=x1[i].rstrip()
+       for j in range(0,len(x1)):
+         if 'to' in x1[j]:
+       
+          x2=x1[j].split('to')
+          x3=x2[0]
+          print(x3)
+          x4=x2[1]
+          print(x4)
+          for k in range(int(x3),int(x4)):
+            tn.write(b' port trunk allow-pass vlan '+k.encode('ascii') +b'\n')
+         else:
+            tn.write(b' port trunk allow-pass vlan '+x[j].encode('ascii') +b'\n')
+            
+       ch=input("want to pass vlan yes/not")
+       if ch=='n':
+        break
+tn.write(b"interface GigabitEthernet0/0/1 \n")
+# description *****connected to olt 1 172.16.0.51*****
+tn.write(b"port link-type hybrid\n")
+tn.write(b"qinq vlan-translation enable\n")
+tn.write(b" port hybrid pvid vlan 3651\n")
+tn.write(b" port hybrid tagged vlan 41 2001 3999 4002\n")
+tn.write(b" port hybrid untagged vlan 3651\n")
+tn.write(b" port vlan-stacking vlan 141 to 150 stack-vlan 3651\n")
+tn.write(b"port vlan-stacking vlan 436 stack-vlan 3651\n")
+tn.write(b" port vlan-stacking vlan 452 stack-vlan 3651\n")
+tn.write(b"port vlan-stacking vlan 468 stack-vlan 3651\n")
+tn.write(b" port vlan-stacking vlan 489 stack-vlan 3651\n")
+tn.write(b"port vlan-stacking vlan 506 stack-vlan 3651\n")
+tn.write(b"port vlan-stacking vlan 536 stack-vlan 3651\n")
+tn.write(b"port vlan-stacking vlan 552 stack-vlan 3651\n")
+tn.write(b" port vlan-stacking vlan 558 stack-vlan 3651\n")
+tn.write(b"port vlan-stacking vlan 577 stack-vlan 3651\n")
+tn.write(b"port vlan-stacking vlan 1830 stack-vlan 3651\n")
+tn.write(b" stp disable\n")
+tn.write(b"traffic-filter inbound acl 3000\n")
+tn.write(b"traffic-filter outbound acl 4000\n")
+tn.write(b" bpdu disable\n")
+tn.write(b'port-isolate enable group 1\n')
+tn.write(b'unicast-suppression 1\n')
+tn.write(b'multicast-suppression 1\n')
+tn.write(b'broadcast-suppression 1 \n')
+tn.write(b'interface GigabitEthernet0/0/2\n')
+ #description *****172.16.0.122 olt 1*****
+tn.write(b'port link-type hybrid\n')
+tn.write(b'qinq vlan-translation enable\n')
+tn.write(b'port hybrid pvid vlan 3651\n')
+tn.write(b' undo port hybrid vlan 1\n')
+tn.write(b'port hybrid tagged vlan 40 276 3999 4002\n')
+tn.write(b"port hybrid untagged vlan 3651\n")
+tn.write(b'port vlan-stacking vlan 464 stack-vlan 3651\n')
+tn.write(b'port vlan-stacking vlan 489 stack-vlan 3651\n')
+tn.write(b'port vlan-stacking vlan 506 stack-vlan 3651\n')
+tn.write(b'port vlan-stacking vlan 543 stack-vlan 3651\n')
+tn.write(b'port vlan-stacking vlan 552 stack-vlan 3651\n')
+tn.write(b'port vlan-stacking vlan 553 stack-vlan 3651\n')
+tn.write(b' port vlan-stacking vlan 558 stack-vlan 3651\n')
+tn.write(b'port vlan-stacking vlan 559 stack-vlan 3651\n')
+tn.write(b'port vlan-stacking vlan 577 stack-vlan 3651\n')
+tn.write(b'port vlan-stacking vlan 579 stack-vlan 3651\n')
+tn.write(b'port vlan-stacking vlan 589 stack-vlan 3651\n')
+tn.write(b' port vlan-stacking vlan 590 stack-vlan 3651\n')
+tn.write(b'port vlan-stacking vlan 593 stack-vlan 3651\n')
+tn.write(b' port vlan-stacking vlan 1830 stack-vlan 3651\n')
+tn.write(b" stp disable\n")
+tn.write(b'traffic-filter outbound acl 4000\n')
+tn.write(b"bpdu disable\n")
+tn.write(b"unicast-suppression 1\n")
+tn.write(b" multicast-suppression 1\n")
+tn.write(b"broadcast-suppression 1 \n")
+while True:
+         interface=input("enter the interface")
+         port=input("enter the port")  #acces/trunk
+         if port=="access":
+            vlan=input("enter vlan")
+            tn.write(b"port link-type "+port.encode("ascii")+b'\n')
+            tn.write(b"port default vlan" +vlan.encode("ascii")+b'\n')
+            tn.write(b"stp disable\n")
+            tn.write(b"bpdu disable\n")
+            tn.write(b"unicast-suppression 1\n")
+            tn.write(b"multicast-suppression 1\n")
+            tn.write(b"broadcast-suppression 1\n")
+         if port=='trunk':
+            tn.write(b"port link-type "+port.encode("ascii")+b'\n')
+            tn.write(b"undo port trunk allow-pass vlan 1 \n")
+            while true:
+    
+                   x=input("enter the vlan")
+       
+                   x1=x.split(',')
+                   for i in range(0,len(x1)):
+                      x1[i]=x1[i].lstrip()
+                      x1[i]=x1[i].rstrip()
+                   for j in range(0,len(x1)):
+                     if 'to' in x1[j]:
+       
+                         x2=x1[j].split('to')
+                         x3=x2[0]
+                         print(x3)
+                         x4=x2[1]
+                         print(x4)
+                         for k in range(int(x3),int(x4)):
+                            tn.write(b'port trunk allow-pass vlan'+k.encode('ascii') +b'\n')
+                     else:
+                          tn.write(b'port trunk allow-pass vlan'+x[j].encode('ascii') +b'\n')
+            
+            ch=input("want to enter vlan yes/not")
+            if ch=='n':
+             break
+            tn.write(b"stp instance 6 cost 1000 \n")
+         b=input("want more enter more interface \n")
+         if b=='n':
+             break
+tn.write(b"interface GigabitEthernet0/0/12\n")
+tn.write(b"description FB_CORE\n")
+tn.write(b"eth-trunk 7\n")
+#
+tn.write(b"interface NULL0\n")
+#
+tn.write(b"cpu-defend policy policy1\n")
+tn.write(b"auto-defend threshold 30\n")
+tn.write(b"auto-defend protocol arp\n")
+tn.write(b" auto-defend action deny\n")
+tn.write(b"auto-defend whitelist 1 interface GigabitEthernet0/0/12\n")
+tn.write(b"undo auto-port-defend enable\n")
+#
+tn.write(b"ip route-static 0.0.0.0 0.0.0.0 172.16.0.1 \n")
+tn.write(b"snmp-agent\n")
+tn.write(b"snmp-agent local-engineid 800007DB03602E201F549E\n")
+tn.write(b"cpu-defend-policy policy1 global\n")
+#
+tn.write(b"user-interface con 0 \n")  
+tn.write(b"authentication-mode aaa\n")
+tn.write(b"user-interface vty 0 4\n")
+tn.write(b"authentication-mode aaa\n")
+tn.write(b"protocol inbound telnet\n")
+tn.write(b"user-interface vty 16 20\n")
+#
+tn.write(b"dot1x-access-profile name dot1x_access_profile\n")
+#
+tn.write(b"mac-access-profile name mac_access_profile\n")
+         
+               
+
+            
+            
+            
+
+
+    
+            
+   
+   
+
